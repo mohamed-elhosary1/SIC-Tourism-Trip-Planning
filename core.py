@@ -162,11 +162,11 @@ def search_attraction_by_name(category_list, name):
 
 
 def sort_attractions(category_list, sort_key="ticket_price", ascending=True):
-    return quick_sort(category_list,
+    new_list = category_list.copy()
+
+    return quick_sort(new_list,
                       key=lambda x: getattr(x, sort_key),
                       ascending=ascending)
-
-
 
 # TODO  -----------------------جزء اروى-------------------------------------
 #-------------------------------------------------------------
@@ -291,47 +291,93 @@ def load_data_from_cloud():
 # ---- Bonus 2: Budget Filter ----
 
 def filter_by_budget(attractions_list, max_budget):
-    """
-    TODO: من قائمة مرتبة بالسعر (استخدم sort_attractions)، جمّع
-          أماكن مجموع أسعارها ماينفعش يتعدى max_budget
-    """
-    pass
+    attractions_list = sort_attractions(attractions_list, "ticket_price")
+    result = []
+    total = 0
+    for attraction in attractions_list:
+        if total + attraction.ticket_price <= max_budget:
+            result.append(attraction)
+            total += attraction.ticket_price
+
+    return result
 
 
 # ---- Bonus 3: Related Attractions ----
 
 def suggest_related_attractions(selected_attraction, all_attractions):
-    """
-    TODO: رجع أماكن تانية في نفس governorate أو نفس category
-          بتاعة selected_attraction (وماتكررش نفس المكان)
-    """
-    pass
-
+    result = []
+    for attraction in all_attractions:
+        if attraction.name.lower() == selected_attraction.name.lower():
+            continue
+        if (attraction.governorate.lower() == selected_attraction.governorate.lower()
+                or attraction.category.lower() == selected_attraction.category.lower()):
+            result.append(attraction)
+    return result
 
 # ---- Bonus 4 Route Optimization  ----
 
 def optimize_trip_route(trip):
-
-    pass
+    if len(trip) <= 1:
+        return trip
+    result = [trip[0]]
+    remaining = trip[1:]
+    while remaining:
+        current = result[-1]
+        same_governorate = []
+        for attraction in remaining:
+            if attraction.governorate == current.governorate:
+                same_governorate.append(attraction)
+        if same_governorate:
+            next_attraction = same_governorate[0]
+        else:
+            next_attraction = remaining[0]
+        result.append(next_attraction)
+        remaining.remove(next_attraction)
+    return result
 
 
 # ---- Bonus 6 Compare Mode ----
 
 def compare_attractions(name1, name2):
-    """
-    """
-    pass
+    attraction1 = get_attraction_by_name(name1)
+    attraction2 = get_attraction_by_name(name2)
+    if attraction1 is None or attraction2 is None:
+        return None
+    print("Name:", attraction1.name, "-", attraction2.name)
+    print("Governorate:", attraction1.governorate, "-", attraction2.governorate)
+    print("Ticket Price:", attraction1.ticket_price, "-", attraction2.ticket_price)
+    print("Rating:", attraction1.rating, "-", attraction2.rating)
+    print("Estimated Time:", attraction1.estimated_time, "-", attraction2.estimated_time)
+    print("Category:", attraction1.category, "-", attraction2.category)
+
+
 
 
 # ---- Bonus 9 Favourites ----
 
 def add_to_favourites(user, attraction_name):
-    pass
+
+    attraction = get_attraction_by_name(attraction_name)
+
+    if attraction is None:
+        return False
+
+    if attraction not in user.favourite_attractions:
+        user.favourite_attractions.append(attraction)
+
+    return True
 
 
 def remove_from_favourites(user, attraction_name):
-    pass
+    attraction = get_attraction_by_name(attraction_name)
+    if attraction is None:
+        return False
+
+    if attraction in user.favourite_attractions:
+        user.favourite_attractions.remove(attraction)
+        return True
+    return False
 
 
 def view_favourites(user):
-    pass
+    return user.favourite_attractions
