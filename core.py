@@ -1,3 +1,7 @@
+"""
+# TODO  -----------------------جزء الحصري-------------------------------------
+"""
+
 from structures_and_algorithms import Stack, HashTable, binary_search, quick_sort
 
 #-------------------------------------------------------------
@@ -9,20 +13,20 @@ ADMIN_PASS = "admin123"
 
 # TODO:
 CATEGORIES = [
-    "Museums",
-    "Historical Sites",
-    "Nature",
-    "Adventure",
-    "Cultural Attractions",
 ]
 #todo
-GOVERNORATES = []
+places = []
 
 # TODO:  تكلفة
 TRANSPORTATION_COST = {
     # "Cairo": 50,
 }
 
+#  Cloud Saving
+USERS_FILE = "data/users.json"
+ATTRACTIONS_FILE = "data/attractions.json"
+HOTELS_FILE = "data/hotels.json"
+# TODO  -----------------------جزء نورا -------------------------------------
 
 #-------------------------------------------------------------
 # 2) Classes
@@ -31,21 +35,37 @@ TRANSPORTATION_COST = {
 class Attraction:
     """
      name, governorate, ticket_price, rating,
-    estimated_time, category.
+    estimated_time, category, description, best_time
+    TODO:
+    """
+    # description و best_time (بونص 5 و8) — بيانات إضافية بس
+
+    def __init__(self, name, governorate, ticket_price, rating,
+                 estimated_time, category, description="",
+                 best_time=""):
+        pass  # TODO
+
+
+class Hotel:
+    """
+    بونص 7: كيان منفصل تمامًا عن Attraction (مش وراثة).
+
+     name, governorate, price_per_night, rating, description
     TODO:
     """
 
-    def __init__(self, name, governorate, ticket_price, rating,
-                 estimated_time, category):
+    def __init__(self, name, governorate, price_per_night,
+                 rating, description=""):
         pass  # TODO
 
 
 class User:
     """
      name, phone, email, gender, governorate,
-    password, age, national_id.
+    password, age, national_id. , favourite_attractions
     TODO:
     """
+    # favourite_attractions (بونص 9): TODO متنساش self.favourite_attractions = []
 
     def __init__(self, name, phone, email, gender, governorate,
                  password, age, national_id):
@@ -84,11 +104,12 @@ def login(email, password):
 # 4) Attractions
 #-------------------------------------------------------------
 
-all_attractions = []  # TODO:   HashTable هنا كمان
+all_attractions = []  # TODO:  ؟  HashTable هنا كمان
 
 
 def add_attraction(name, governorate, ticket_price, rating,
-                    estimated_time, category):
+                    estimated_time, category, description="",
+                    best_time=""):
     """[Admin] TODO: اعمل Attraction وضيفه  all_attractions"""
     pass
 
@@ -108,6 +129,11 @@ def get_by_category(category):
     pass
 
 
+def get_attraction_by_name(name):
+    """TODO: رجع الـ Attraction بالاسم (هتحتاجها في Compare/Favourites)"""
+    pass
+
+
 def search_attraction_by_name(category_list, name):
     """
     TODO: رتب القائمة بالاسم (لو مش متسورتة) واستخدم
@@ -119,12 +145,40 @@ def search_attraction_by_name(category_list, name):
 def sort_attractions(category_list, sort_key="ticket_price", ascending=True):
     """
     TODO: استخدم quick_sort
+    # TODO : ممكن تتعمل باكتر من شكل عشان البونص
     """
     pass
 
-
+# TODO  -----------------------جزء اروى-------------------------------------
 #-------------------------------------------------------------
-# 5) Trip
+# 5) Hotels  (بونص 7)
+#-------------------------------------------------------------
+
+all_hotels = []  # TODO
+
+
+def add_hotel(name, governorate, price_per_night, rating, description=""):
+    """[Admin] TODO: اعمل Hotel وضيفه all_hotels"""
+    pass
+
+
+def update_hotel(name, **fields):
+    """[Admin] TODO: سيرش بالاسم وغير الفيلدز"""
+    pass
+
+
+def remove_hotel(name):
+    """[Admin] TODO: دور واحذفه من all_hotels"""
+    pass
+
+
+def get_hotels_by_governorate(governorate):
+    """TODO: فلترة all_hotels حسب المحافظة (يقترح فنادق قريبة من رحلة المستخدم)"""
+    pass
+
+# TODO  -----------------------جزء اروى-------------------------------------
+#-------------------------------------------------------------
+# 6) Trip
 #-------------------------------------------------------------
 
 def create_empty_trip():
@@ -154,7 +208,7 @@ def calculate_final_summary(trip, user_governorate):
 
 
 #-------------------------------------------------------------
-# 6) Navigation
+# 7) Navigation
 #-------------------------------------------------------------
 
 class PageNavigator:
@@ -173,7 +227,7 @@ class PageNavigator:
 
 
 #-------------------------------------------------------------
-# 7) Validation
+# 8) Validation
 #-------------------------------------------------------------
 
 def validate_email(email):
@@ -194,12 +248,71 @@ def validate_national_id(national_id):
 def validate_age(age):
     """TODO:   السن رقم منطقي"""
     pass
+#TODO ##################################################
+# TODO جزء الحصري
+#-------------------------------------------------------------
+# 9) Bonus Features
+#-------------------------------------------------------------
 
 
-#-------------------------------------------------------------
-# 8) Bonus Feature
-#-------------------------------------------------------------
+def save_data_to_cloud():
+    """
+
+    """
+    pass
+
+
+def load_data_from_cloud():
+    """
+
+    """
+    pass
+
+
+# ---- Bonus 2: Budget Filter ----
+
+def filter_by_budget(attractions_list, max_budget):
+    """
+    TODO: من قائمة مرتبة بالسعر (استخدم sort_attractions)، جمّع
+          أماكن مجموع أسعارها ماينفعش يتعدى max_budget
+    """
+    pass
+
+
+# ---- Bonus 3: Related Attractions ----
 
 def suggest_related_attractions(selected_attraction, all_attractions):
+    """
+    TODO: رجع أماكن تانية في نفس governorate أو نفس category
+          بتاعة selected_attraction (وماتكررش نفس المكان)
+    """
     pass
-    #TODO : محتاجين نفكر فيها
+
+
+# ---- Bonus 4 Route Optimization  ----
+
+def optimize_trip_route(trip):
+
+    pass
+
+
+# ---- Bonus 6 Compare Mode ----
+
+def compare_attractions(name1, name2):
+    """
+    """
+    pass
+
+
+# ---- Bonus 9 Favourites ----
+
+def add_to_favourites(user, attraction_name):
+    pass
+
+
+def remove_from_favourites(user, attraction_name):
+    pass
+
+
+def view_favourites(user):
+    pass
