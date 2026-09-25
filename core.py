@@ -71,6 +71,8 @@ class User:
 # 3) Auth
 
 users_table = HashTable()
+all_users = []  # parallel list used by save_data_to_cloud
+
 def register_user(name, phone, email, gender, governorate,
                   password, age, national_id):
     if users_table.get(email) is not None:
@@ -82,6 +84,7 @@ def register_user(name, phone, email, gender, governorate,
     user = User(name, phone, email, gender, governorate,
                 password, age, national_id)
     users_table.insert(email, user)
+    all_users.append(user)
     return True
 
 def login(email, password):
@@ -276,16 +279,106 @@ def validate_age(age):
 
 def save_data_to_cloud():
     """
-
+    Saves users, attractions, and hotels to local JSON files (cloud simulation).
+    Files: data/users.json, data/attractions.json, data/hotels.json
     """
-    pass
+    import json
+    import os
+
+    os.makedirs("data", exist_ok=True)
+
+    # Save users
+    users_data = []
+    for user in all_users:
+        users_data.append({
+            "name": user.name,
+            "phone": user.phone,
+            "email": user.email,
+            "gender": user.gender,
+            "governorate": user.governorate,
+            "password": user.password,
+            "age": user.age,
+            "national_id": user.national_id,
+            "favourite_attractions": [a.name for a in user.favourite_attractions]
+        })
+    with open(USERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(users_data, f, ensure_ascii=False, indent=2)
+
+    # Save attractions
+    attractions_data = []
+    for attraction in all_attractions:
+        attractions_data.append({
+            "name": attraction.name,
+            "governorate": attraction.governorate,
+            "ticket_price": attraction.ticket_price,
+            "rating": attraction.rating,
+            "estimated_time": attraction.estimated_time,
+            "category": attraction.category,
+            "description": attraction.description,
+            "best_time": attraction.best_time
+        })
+    with open(ATTRACTIONS_FILE, "w", encoding="utf-8") as f:
+        json.dump(attractions_data, f, ensure_ascii=False, indent=2)
+
+    # Save hotels
+    hotels_data = []
+    for hotel in all_hotels:
+        hotels_data.append({
+            "name": hotel.name,
+            "governorate": hotel.governorate,
+            "price_per_night": hotel.price_per_night,
+            "rating": hotel.rating,
+            "description": hotel.description
+        })
+    with open(HOTELS_FILE, "w", encoding="utf-8") as f:
+        json.dump(hotels_data, f, ensure_ascii=False, indent=2)
 
 
 def load_data_from_cloud():
     """
-
+    Loads users, attractions, and hotels from local JSON files (cloud simulation).
+    Files: data/users.json, data/attractions.json, data/hotels.json
     """
-    pass
+    import json
+    import os
+
+    # Load attractions first (needed to restore user favourites)
+    if os.path.exists(ATTRACTIONS_FILE):
+        with open(ATTRACTIONS_FILE, "r", encoding="utf-8") as f:
+            for item in json.load(f):
+                attraction = Attraction(
+                    item["name"], item["governorate"], item["ticket_price"],
+                    item["rating"], item["estimated_time"], item["category"],
+                    item.get("description", ""), item.get("best_time", "")
+                )
+                all_attractions.append(attraction)
+
+    # Load hotels
+    if os.path.exists(HOTELS_FILE):
+        with open(HOTELS_FILE, "r", encoding="utf-8") as f:
+            for item in json.load(f):
+                hotel = Hotel(
+                    item["name"], item["governorate"], item["price_per_night"],
+                    item["rating"], item.get("description", "")
+                )
+                all_hotels.append(hotel)
+
+    # Load users
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            for item in json.load(f):
+                user = User(
+                    item["name"], item["phone"], item["email"], item["gender"],
+                    item["governorate"], item["password"], item["age"],
+                    item["national_id"]
+                )
+                # Restore favourite attractions by name
+                for name in item.get("favourite_attractions", []):
+                    attraction = get_attraction_by_name(name)
+                    if attraction:
+                        user.favourite_attractions.append(attraction)
+                users_table.insert(user.email, user)
+                all_users.append(user)
 
 
 # ---- Bonus 2: Budget Filter ----
