@@ -467,7 +467,7 @@ def compare_attractions(name1, name2):
     print("Category:", attraction1.category, "-", attraction2.category)
 
 
-
+ 
 
 # ---- Bonus 9 Favourites ----
 
