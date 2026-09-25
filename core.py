@@ -11,15 +11,22 @@ from structures_and_algorithms import Stack, HashTable, binary_search, quick_sor
 ADMIN_EMAIL = "admin@gmail.com"
 ADMIN_PASS = "admin123"
 
-# TODO:
 CATEGORIES = [
+    "Historical",
+    "Beaches",
+    "Adventure",
+    "Religious",
+    "Entertainment",
 ]
-#todo
-places = []
 
-# TODO:  تكلفة
 TRANSPORTATION_COST = {
-    # "Cairo": 50,
+    "Cairo": 50,
+    "Giza": 60,
+    "Alexandria": 80,
+    "Luxor": 120,
+    "Aswan": 130,
+    "Red Sea": 150,
+    "Sinai": 160,
 }
 
 #  Cloud Saving
@@ -71,7 +78,7 @@ class User:
 # 3) Auth
 
 users_table = HashTable()
-all_users = []  # parallel list used by save_data_to_cloud
+all_users = []
 
 def register_user(name, phone, email, gender, governorate,
                   password, age, national_id):
@@ -154,12 +161,13 @@ def get_attraction_by_name(name):
 
 
 def search_attraction_by_name(category_list, name):
-    category_list = sort_attractions(category_list, "name")
+    # Sort and compare case-insensitively so "pyramids" matches "Pyramids".
+    sorted_list = quick_sort(category_list.copy(), key=lambda x: x.name.lower())
 
-    index = binary_search(category_list, name, key=lambda x: x.name)
+    index = binary_search(sorted_list, name.lower(), key=lambda x: x.name.lower())
 
     if index != -1:
-        return category_list[index]
+        return sorted_list[index]
 
     return None
 
@@ -257,14 +265,11 @@ def calculate_final_summary(trip, user_governorate):
     """
     attractions_cost = sum(attraction.ticket_price for attraction in trip)
 
-    transportation_cost = TRANSPORTATION_COST.get(user_governorate, 0)
-
-    if transportation_cost == 0:
-        governorate_key = user_governorate.lower()
-        for governorate, cost in TRANSPORTATION_COST.items():
-            if governorate.lower() == governorate_key:
-                transportation_cost = cost
-                break
+    transportation_cost = 0
+    for governorate, cost in TRANSPORTATION_COST.items():
+        if governorate.lower() == user_governorate.lower():
+            transportation_cost = cost
+            break
 
     return {
         "attractions_cost": attractions_cost,
@@ -310,10 +315,13 @@ def validate_email(email):
 
 
 def validate_phone(phone):
-    """Validate an Egyptian mobile number: 11 digits starting with 010/011/012/015."""
-    import re
-    phone = str(phone)
-    return bool(re.fullmatch(r"01[0125]\d{8}", phone))
+    """Validate a phone number globally (must include the country code, e.g. +201234567890)."""
+    import phonenumbers
+    try:
+        parsed = phonenumbers.parse(str(phone), None)
+        return phonenumbers.is_valid_number(parsed)
+    except phonenumbers.NumberParseException:
+        return False
 
 
 def validate_national_id(national_id):
@@ -337,12 +345,10 @@ def validate_age(age):
 #-------------------------------------------------------------
 
 
-DRIVE_FOLDER = r"G:\My Drive\SIC_Tourism_Data"
-
-
 def save_data_to_cloud():
     import json, os
-    os.makedirs(DRIVE_FOLDER, exist_ok=True)
+
+    os.makedirs(os.path.dirname(USERS_FILE) or ".", exist_ok=True)
 
     users_data = [
         {"name": u.name, "phone": u.phone, "email": u.email, "gender": u.gender,
@@ -363,37 +369,36 @@ def save_data_to_cloud():
         for h in all_hotels
     ]
 
-    for filename, data in [("users.json", users_data),
-                           ("attractions.json", attractions_data),
-                           ("hotels.json", hotels_data)]:
-        with open(os.path.join(DRIVE_FOLDER, filename), "w", encoding="utf-8") as f:
+    for filepath, data in [(USERS_FILE, users_data),
+                           (ATTRACTIONS_FILE, attractions_data),
+                           (HOTELS_FILE, hotels_data)]:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False)
 
 
 def load_data_from_cloud():
     import json, os
 
-    def load(filename):
-        path = os.path.join(DRIVE_FOLDER, filename)
-        if not os.path.exists(path):
+    def load(filepath):
+        if not os.path.exists(filepath):
             return []
-        with open(path, "r", encoding="utf-8") as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    for item in load("attractions.json"):
+    for item in load(ATTRACTIONS_FILE):
         all_attractions.append(Attraction(
             item["name"], item["governorate"], item["ticket_price"],
             item["rating"], item["estimated_time"], item["category"],
             item.get("description", ""), item.get("best_time", "")
         ))
 
-    for item in load("hotels.json"):
+    for item in load(HOTELS_FILE):
         all_hotels.append(Hotel(
             item["name"], item["governorate"], item["price_per_night"],
             item["rating"], item.get("description", "")
         ))
 
-    for item in load("users.json"):
+    for item in load(USERS_FILE):
         user = User(item["name"], item["phone"], item["email"], item["gender"],
                     item["governorate"], item["password"], item["age"], item["national_id"])
         for name in item.get("favourite_attractions", []):
@@ -420,9 +425,9 @@ def filter_by_budget(attractions_list, max_budget):
 
 # ---- Bonus 3: Related Attractions ----
 
-def suggest_related_attractions(selected_attraction, all_attractions):
+def suggest_related_attractions(selected_attraction, attractions_list):
     result = []
-    for attraction in all_attractions:
+    for attraction in attractions_list:
         if attraction.name.lower() == selected_attraction.name.lower():
             continue
         if (attraction.governorate.lower() == selected_attraction.governorate.lower()
@@ -441,7 +446,7 @@ def optimize_trip_route(trip):
         current = result[-1]
         same_governorate = []
         for attraction in remaining:
-            if attraction.governorate == current.governorate:
+            if attraction.governorate.lower() == current.governorate.lower():
                 same_governorate.append(attraction)
         if same_governorate:
             next_attraction = same_governorate[0]
@@ -497,3 +502,138 @@ def remove_from_favourites(user, attraction_name):
 
 def view_favourites(user):
     return user.favourite_attractions
+
+# ============================================================
+# TODO — Pending work (scaffolding only, nothing above is edited)
+# ============================================================
+
+# --- 2) National ID / Passport / Nationality ------------------------------
+# TODO: User class above needs two new attributes: nationality, passport_id
+#       (not adding them directly, keeping the class untouched for now)
+
+def validate_national_id_strict(national_id):
+    """
+    TODO: stronger check than "14 digits":
+          - century digit (2 or 3)
+          - birth date part (YYMMDD) is a real date
+          - governorate code part is valid
+    """
+    pass
+
+
+def validate_passport_id(passport_id):
+    """
+    TODO: validate passport format for foreign users
+          (alphanumeric, length depends on issuing country)
+    """
+    pass
+
+
+def register_user_with_nationality(name, phone, email, gender, governorate,
+                                    password, age, nationality,
+                                    national_id=None, passport_id=None):
+    """
+    TODO: replacement/extension for register_user() once nationality is
+          added to User:
+          - nationality == "Egyptian" -> require + validate national_id
+          - otherwise                 -> require + validate passport_id
+    """
+    pass
+
+
+# --- 3) General validation + better error messages ------------------------
+
+def validate_sort_key(sort_key):
+    """
+    TODO: check sort_key is one of the allowed Attraction fields
+          (e.g. "ticket_price", "rating") before it's used with getattr(),
+          so a bad value doesn't crash with AttributeError.
+    """
+    pass
+
+# TODO: sort_attractions() above should call validate_sort_key(sort_key)
+#       first and return a friendly error instead of crashing.
+# TODO: every other input() value passed straight into a function that
+#       assumes a specific value needs the same kind of guard + a clear
+#       message instead of letting the raw exception surface.
+
+
+# --- 4) places.json ---------------------------------------------------------
+
+PLACES_FILE = "data/places.json"  # TODO: not used yet
+
+def load_places_from_json():
+    """
+    TODO: load full attraction data (name, governorate, category, price,
+          rating, description, best_time, coordinates, ...) from
+          PLACES_FILE into all_attractions on startup.
+    """
+    pass
+
+
+# --- 5) Time-based suggestions -----------------------------------------------
+
+def suggest_places_by_current_time():
+    """
+    TODO: use datetime.now() and each attraction's best_time to suggest
+          places that fit right now (morning / evening / etc.).
+    """
+    pass
+
+
+# --- 6) Real worldwide data ---------------------------------------------------
+
+def seed_sample_data():
+    """Populate all_attractions and all_hotels with real sample data for testing/demos."""
+    if all_attractions or all_hotels:
+        return  # already seeded (or loaded from cloud) — don't duplicate
+
+    # Egypt
+    add_attraction("Pyramids of Giza", "Giza", 400, 4.8, "3 hours", "Historical",
+                    "The last surviving wonder of the ancient world, next to the Great Sphinx.", "Morning")
+    add_attraction("Egyptian Museum", "Cairo", 300, 4.6, "2 hours", "Historical",
+                    "Home to the world's largest collection of Pharaonic antiquities.", "Morning")
+    add_attraction("Karnak Temple", "Luxor", 350, 4.7, "2 hours", "Religious",
+                    "A vast temple complex built over 2,000 years for the god Amun.", "Morning")
+    add_attraction("Abu Simbel", "Aswan", 400, 4.9, "2 hours", "Religious",
+                    "Two massive rock temples built by Ramesses II.", "Morning")
+    add_attraction("Hurghada Red Sea Beach", "Red Sea", 0, 4.5, "Full day", "Beaches",
+                    "Clear turquoise water and coral reefs on the Red Sea coast.", "Afternoon")
+    add_attraction("Ras Mohammed National Park", "Sinai", 300, 4.6, "Full day", "Adventure",
+                    "Snorkeling and diving at one of the world's top reef sites.", "Morning")
+    add_attraction("Khan El Khalili", "Cairo", 0, 4.4, "2 hours", "Entertainment",
+                    "A centuries-old bazaar packed with shops, cafes, and street food.", "Evening")
+
+    # International
+    add_attraction("Eiffel Tower", "Paris", 26, 4.7, "2 hours", "Entertainment",
+                    "Paris' iconic iron tower with panoramic city views.", "Evening")
+    add_attraction("Colosseum", "Rome", 18, 4.8, "2 hours", "Historical",
+                    "The largest ancient amphitheatre ever built.", "Morning")
+    add_attraction("Santorini Caldera", "Santorini", 0, 4.9, "Full day", "Beaches",
+                    "Whitewashed villages perched above a volcanic caldera.", "Afternoon")
+    add_attraction("Ubud Jungle Swing", "Bali", 25, 4.5, "2 hours", "Adventure",
+                    "Giant rope swings over rice terraces and jungle canopy.", "Morning")
+    add_attraction("Sagrada Familia", "Barcelona", 30, 4.8, "2 hours", "Religious",
+                    "Gaudi's still-unfinished basilica, a masterpiece of design.", "Morning")
+    add_attraction("Great Wall of China", "Beijing", 10, 4.9, "4 hours", "Historical",
+                    "An ancient fortification stretching thousands of kilometers.", "Morning")
+
+    # Hotels — Egypt
+    add_hotel("Marriott Mena House", "Giza", 3500, 4.7,
+              "Historic hotel with direct views of the Pyramids.")
+    add_hotel("Steigenberger Nile Palace", "Luxor", 2200, 4.5,
+              "Riverside hotel close to Luxor and Karnak temples.")
+    add_hotel("Four Seasons Aswan", "Aswan", 4000, 4.8,
+              "Nile-view resort near Elephantine Island.")
+    add_hotel("Hilton Hurghada Plaza", "Red Sea", 1800, 4.4,
+              "Beachfront resort with private lagoon access.")
+
+    # Hotels — International
+    add_hotel("Ritz Paris", "Paris", 12000, 4.9,
+              "Legendary luxury hotel steps from Place Vendome.")
+    add_hotel("The St. Regis Rome", "Rome", 9000, 4.8,
+              "Classic 5-star hotel near the Spanish Steps.")
+    add_hotel("Santorini Grace Hotel", "Santorini", 7000, 4.9,
+              "Cliffside boutique hotel overlooking the caldera.")
+    add_hotel("Mandarin Oriental Barcelona", "Barcelona", 6000, 4.7,
+              "Modern luxury hotel on Passeig de Gracia.")
