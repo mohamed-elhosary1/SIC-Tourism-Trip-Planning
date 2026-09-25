@@ -180,23 +180,43 @@ all_hotels = []  # TODO
 
 
 def add_hotel(name, governorate, price_per_night, rating, description=""):
-    """[Admin] TODO: اعمل Hotel وضيفه all_hotels"""
-    pass
+    """[Admin] Add a Hotel and store it in all_hotels."""
+    hotel = Hotel(name, governorate, price_per_night, rating, description)
+    all_hotels.append(hotel)
+    return hotel
 
 
 def update_hotel(name, **fields):
-    """[Admin] TODO: سيرش بالاسم وغير الفيلدز"""
-    pass
+    """[Admin] Find a hotel by name and update its existing fields."""
+    hotel = next((h for h in all_hotels if h.name.lower() == name.lower()), None)
+
+    if hotel is None:
+        return False
+
+    for field, value in fields.items():
+        if hasattr(hotel, field):
+            setattr(hotel, field, value)
+
+    return True
 
 
 def remove_hotel(name):
-    """[Admin] TODO: دور واحذفه من all_hotels"""
-    pass
+    """[Admin] Find a hotel by name and remove it from all_hotels."""
+    hotel = next((h for h in all_hotels if h.name.lower() == name.lower()), None)
+
+    if hotel is None:
+        return False
+
+    all_hotels.remove(hotel)
+    return True
 
 
 def get_hotels_by_governorate(governorate):
-    """TODO: فلترة all_hotels حسب المحافظة (يقترح فنادق قريبة من رحلة المستخدم)"""
-    pass
+    """Return all hotels located in the requested governorate."""
+    return [
+        hotel for hotel in all_hotels
+        if hotel.governorate.lower() == governorate.lower()
+    ]
 
 # TODO  -----------------------جزء اروى-------------------------------------
 #-------------------------------------------------------------
@@ -204,29 +224,53 @@ def get_hotels_by_governorate(governorate):
 #-------------------------------------------------------------
 
 def create_empty_trip():
-    """TODO: هات ستراكشر فاضي  الأماكن """
-    pass
+    """Create and return an empty My Trip plan."""
+    return []
 
 
 def add_to_trip(trip, attraction):
-    """TODO: ضيف المكان لو مش موجود """
-    pass
+    """Add an attraction to the trip if it is not already selected."""
+    if attraction not in trip:
+        trip.append(attraction)
+        return True
+    return False
 
 
 def remove_from_trip(trip, attraction_name):
-    """TODO: شيل المكان """
-    pass
+    """Remove an attraction from the trip by name."""
+    for attraction in trip:
+        if attraction.name.lower() == attraction_name.lower():
+            trip.remove(attraction)
+            return True
+
+    return False
 
 
 def calculate_final_summary(trip, user_governorate):
     """
+    Calculate the final trip summary.
 
-    TODO:
-         تكلفة الأماكن: sum()
-         تكلفة المواصلات من TRANSPORTATION_COST حسب المحافظة
-         dict فيه: attractions_cost, transportation_cost, total
+    Returns a dictionary containing:
+        attractions_cost
+        transportation_cost
+        total
     """
-    pass
+    attractions_cost = sum(attraction.ticket_price for attraction in trip)
+
+    transportation_cost = TRANSPORTATION_COST.get(user_governorate, 0)
+
+    if transportation_cost == 0:
+        governorate_key = user_governorate.lower()
+        for governorate, cost in TRANSPORTATION_COST.items():
+            if governorate.lower() == governorate_key:
+                transportation_cost = cost
+                break
+
+    return {
+        "attractions_cost": attractions_cost,
+        "transportation_cost": transportation_cost,
+        "total": attractions_cost + transportation_cost
+    }
 
 
 #-------------------------------------------------------------
@@ -234,18 +278,25 @@ def calculate_final_summary(trip, user_governorate):
 #-------------------------------------------------------------
 
 class PageNavigator:
-# TODO : التنقل بين الصفحات
+    """Manage page navigation using the required Stack data structure."""
+
     def __init__(self):
-        pass  # TODO: self.history = Stack()
+        self.history = Stack()
 
     def go_to(self, page_name):
-        pass  # TODO: push
+        self.history.push(page_name)
+        return page_name
 
     def go_back(self):
-        pass  # TODO: pop
+        if self.history.is_empty():
+            return None
+        self.history.pop()
+        return self.current_page()
 
     def current_page(self):
-        pass  # TODO: peek
+        if self.history.is_empty():
+            return None
+        return self.history.peek()
 
 
 #-------------------------------------------------------------
@@ -253,23 +304,32 @@ class PageNavigator:
 #-------------------------------------------------------------
 
 def validate_email(email):
-    """TODO:   شكل الإيميل"""
-    pass
+    """Validate a basic email address format."""
+    import re
+    return bool(re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", str(email)))
 
 
 def validate_phone(phone):
-    """TODO:   شكل رقم الموبايل"""
-    pass
+    """Validate an Egyptian mobile number: 11 digits starting with 010/011/012/015."""
+    import re
+    phone = str(phone)
+    return bool(re.fullmatch(r"01[0125]\d{8}", phone))
 
 
 def validate_national_id(national_id):
-    """TODO:   الرقم القومي 14 رقم"""
-    pass
+    """Validate that the Egyptian national ID contains exactly 14 digits."""
+    return str(national_id).isdigit() and len(str(national_id)) == 14
 
 
 def validate_age(age):
-    """TODO:   السن رقم منطقي"""
-    pass
+    """Validate that age is a reasonable positive integer."""
+    try:
+        age = int(age)
+    except (TypeError, ValueError):
+        return False
+
+    return 1 <= age <= 120
+
 #TODO ##################################################
 # TODO جزء الحصري
 #-------------------------------------------------------------
