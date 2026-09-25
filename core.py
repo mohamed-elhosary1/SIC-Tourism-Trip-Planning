@@ -277,171 +277,106 @@ def validate_age(age):
 #-------------------------------------------------------------
 
 
-def _get_drive_service():
-    """Build and return an authenticated Google Drive service client."""
-    from google.oauth2 import service_account
-    from googleapiclient.discovery import build
-    SCOPES = ["https://www.googleapis.com/auth/drive"]
-    creds = service_account.Credentials.from_service_account_file(
-        "credentials.json", scopes=SCOPES
-    )
-    return build("drive", "v3", credentials=creds)
-
-
-def _get_or_create_folder(service, folder_name="SIC_Tourism_Data"):
-    """Return the Drive folder ID, creating it if it doesn't exist."""
-    query = (f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
-             f" and trashed=false")
-    results = service.files().list(q=query, fields="files(id)").execute()
-    files = results.get("files", [])
-    if files:
-        return files[0]["id"]
-    folder_meta = {
-        "name": folder_name,
-        "mimeType": "application/vnd.google-apps.folder"
-    }
-    folder = service.files().create(body=folder_meta, fields="id").execute()
-    return folder["id"]
-
-
-def _find_file(service, folder_id, filename):
-    """Return the file ID if filename exists in the folder, else None."""
-    query = f"name='{filename}' and '{folder_id}' in parents and trashed=false"
-    results = service.files().list(q=query, fields="files(id)").execute()
-    files = results.get("files", [])
-    return files[0]["id"] if files else None
-
-
-def _upload_json(service, folder_id, filename, data):
-    """Upload (create or update) a JSON file to Google Drive."""
-    import json
-    import io
-    from googleapiclient.http import MediaIoBaseUpload
-    content = json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
-    media = MediaIoBaseUpload(io.BytesIO(content), mimetype="application/json")
-    file_id = _find_file(service, folder_id, filename)
-    if file_id:
-        service.files().update(fileId=file_id, media_body=media).execute()
-    else:
-        meta = {"name": filename, "parents": [folder_id]}
-        service.files().create(body=meta, media_body=media, fields="id").execute()
-
-
-def _download_json(service, folder_id, filename):
-    """Download and return parsed JSON from a Drive file, or None if not found."""
-    import json
-    from googleapiclient.http import MediaIoBaseDownload
-    import io
-    file_id = _find_file(service, folder_id, filename)
-    if not file_id:
-        return None
-    request = service.files().get_media(fileId=file_id)
-    buffer = io.BytesIO()
-    downloader = MediaIoBaseDownload(buffer, request)
-    done = False
-    while not done:
-        _, done = downloader.next_chunk()
-    buffer.seek(0)
-    return json.loads(buffer.read().decode("utf-8"))
+# Paste your Google Drive folder ID here after sharing it with the service account
+DRIVE_FOLDER_ID = "PASTE_YOUR_FOLDER_ID_HERE"
 
 
 def save_data_to_cloud():
-    """
-    Saves users, attractions, and hotels to Google Drive (SIC_Tourism_Data folder).
-    Uses credentials.json (service account) for authentication.
-    """
-    service = _get_drive_service()
-    folder_id = _get_or_create_folder(service)
+    import json, io
+    from google.oauth2 import service_account
+    from googleapiclient.discovery import build
+    from googleapiclient.http import MediaIoBaseUpload
 
-    # Save users
-    users_data = []
-    for user in all_users:
-        users_data.append({
-            "name": user.name,
-            "phone": user.phone,
-            "email": user.email,
-            "gender": user.gender,
-            "governorate": user.governorate,
-            "password": user.password,
-            "age": user.age,
-            "national_id": user.national_id,
-            "favourite_attractions": [a.name for a in user.favourite_attractions]
-        })
-    _upload_json(service, folder_id, "users.json", users_data)
+    creds = service_account.Credentials.from_service_account_file(
+        "credentials.json", scopes=["https://www.googleapis.com/auth/drive"]
+    )
+    drive = build("drive", "v3", credentials=creds)
 
-    # Save attractions
-    attractions_data = []
-    for attraction in all_attractions:
-        attractions_data.append({
-            "name": attraction.name,
-            "governorate": attraction.governorate,
-            "ticket_price": attraction.ticket_price,
-            "rating": attraction.rating,
-            "estimated_time": attraction.estimated_time,
-            "category": attraction.category,
-            "description": attraction.description,
-            "best_time": attraction.best_time
-        })
-    _upload_json(service, folder_id, "attractions.json", attractions_data)
+    all_data = {
+        "users.json": [
+            {"name": u.name, "phone": u.phone, "email": u.email, "gender": u.gender,
+             "governorate": u.governorate, "password": u.password, "age": u.age,
+             "national_id": u.national_id,
+             "favourite_attractions": [a.name for a in u.favourite_attractions]}
+            for u in all_users
+        ],
+        "attractions.json": [
+            {"name": a.name, "governorate": a.governorate, "ticket_price": a.ticket_price,
+             "rating": a.rating, "estimated_time": a.estimated_time, "category": a.category,
+             "description": a.description, "best_time": a.best_time}
+            for a in all_attractions
+        ],
+        "hotels.json": [
+            {"name": h.name, "governorate": h.governorate, "price_per_night": h.price_per_night,
+             "rating": h.rating, "description": h.description}
+            for h in all_hotels
+        ],
+    }
 
-    # Save hotels
-    hotels_data = []
-    for hotel in all_hotels:
-        hotels_data.append({
-            "name": hotel.name,
-            "governorate": hotel.governorate,
-            "price_per_night": hotel.price_per_night,
-            "rating": hotel.rating,
-            "description": hotel.description
-        })
-    _upload_json(service, folder_id, "hotels.json", hotels_data)
+    for filename, data in all_data.items():
+        content = json.dumps(data, ensure_ascii=False).encode()
+        media = MediaIoBaseUpload(io.BytesIO(content), mimetype="application/json")
+        existing = drive.files().list(
+            q=f"name='{filename}' and '{DRIVE_FOLDER_ID}' in parents and trashed=false",
+            fields="files(id)"
+        ).execute().get("files", [])
+        if existing:
+            drive.files().update(fileId=existing[0]["id"], media_body=media).execute()
+        else:
+            drive.files().create(
+                body={"name": filename, "parents": [DRIVE_FOLDER_ID]},
+                media_body=media
+            ).execute()
 
 
 def load_data_from_cloud():
-    """
-    Loads users, attractions, and hotels from Google Drive (SIC_Tourism_Data folder).
-    Uses credentials.json (service account) for authentication.
-    """
-    service = _get_drive_service()
-    folder_id = _get_or_create_folder(service)
+    import json, io
+    from google.oauth2 import service_account
+    from googleapiclient.discovery import build
+    from googleapiclient.http import MediaIoBaseDownload
 
-    # Load attractions first (needed to restore user favourites)
-    attractions_data = _download_json(service, folder_id, "attractions.json")
-    if attractions_data:
-        for item in attractions_data:
-            attraction = Attraction(
-                item["name"], item["governorate"], item["ticket_price"],
-                item["rating"], item["estimated_time"], item["category"],
-                item.get("description", ""), item.get("best_time", "")
-            )
-            all_attractions.append(attraction)
+    creds = service_account.Credentials.from_service_account_file(
+        "credentials.json", scopes=["https://www.googleapis.com/auth/drive"]
+    )
+    drive = build("drive", "v3", credentials=creds)
 
-    # Load hotels
-    hotels_data = _download_json(service, folder_id, "hotels.json")
-    if hotels_data:
-        for item in hotels_data:
-            hotel = Hotel(
-                item["name"], item["governorate"], item["price_per_night"],
-                item["rating"], item.get("description", "")
-            )
-            all_hotels.append(hotel)
+    def download(filename):
+        files = drive.files().list(
+            q=f"name='{filename}' and '{DRIVE_FOLDER_ID}' in parents and trashed=false",
+            fields="files(id)"
+        ).execute().get("files", [])
+        if not files:
+            return []
+        buf = io.BytesIO()
+        downloader = MediaIoBaseDownload(buf, drive.files().get_media(fileId=files[0]["id"]))
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+        buf.seek(0)
+        return json.loads(buf.read().decode())
 
-    # Load users
-    users_data = _download_json(service, folder_id, "users.json")
-    if users_data:
-        for item in users_data:
-            user = User(
-                item["name"], item["phone"], item["email"], item["gender"],
-                item["governorate"], item["password"], item["age"],
-                item["national_id"]
-            )
-            # Restore favourite attractions by name
-            for name in item.get("favourite_attractions", []):
-                attraction = get_attraction_by_name(name)
-                if attraction:
-                    user.favourite_attractions.append(attraction)
-            users_table.insert(user.email, user)
-            all_users.append(user)
+    for item in download("attractions.json"):
+        all_attractions.append(Attraction(
+            item["name"], item["governorate"], item["ticket_price"],
+            item["rating"], item["estimated_time"], item["category"],
+            item.get("description", ""), item.get("best_time", "")
+        ))
+
+    for item in download("hotels.json"):
+        all_hotels.append(Hotel(
+            item["name"], item["governorate"], item["price_per_night"],
+            item["rating"], item.get("description", "")
+        ))
+
+    for item in download("users.json"):
+        user = User(item["name"], item["phone"], item["email"], item["gender"],
+                    item["governorate"], item["password"], item["age"], item["national_id"])
+        for name in item.get("favourite_attractions", []):
+            attraction = get_attraction_by_name(name)
+            if attraction:
+                user.favourite_attractions.append(attraction)
+        users_table.insert(user.email, user)
+        all_users.append(user)
 
 
 # ---- Bonus 2: Budget Filter ----
