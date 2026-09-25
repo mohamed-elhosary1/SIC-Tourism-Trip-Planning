@@ -28,126 +28,145 @@ ATTRACTIONS_FILE = "data/attractions.json"
 HOTELS_FILE = "data/hotels.json"
 # TODO  -----------------------جزء نورا -------------------------------------
 
-#-------------------------------------------------------------
+
 # 2) Classes
-#-------------------------------------------------------------
-
 class Attraction:
-    """
-     name, governorate, ticket_price, rating,
-    estimated_time, category, description, best_time
-    TODO:
-    """
-    # description و best_time (بونص 5 و8) — بيانات إضافية بس
-
     def __init__(self, name, governorate, ticket_price, rating,
                  estimated_time, category, description="",
                  best_time=""):
-        pass  # TODO
+
+        self.name = name
+        self.governorate = governorate
+        self.ticket_price = ticket_price
+        self.rating = rating
+        self.estimated_time = estimated_time
+        self.category = category
+        self.description = description
+        self.best_time = best_time
 
 
 class Hotel:
-    """
-    بونص 7: كيان منفصل تمامًا عن Attraction (مش وراثة).
-
-     name, governorate, price_per_night, rating, description
-    TODO:
-    """
-
     def __init__(self, name, governorate, price_per_night,
                  rating, description=""):
-        pass  # TODO
+        self.name = name
+        self.governorate = governorate
+        self.price_per_night = price_per_night
+        self.rating = rating
+        self.description = description
 
 
 class User:
-    """
-     name, phone, email, gender, governorate,
-    password, age, national_id. , favourite_attractions
-    TODO:
-    """
-    # favourite_attractions (بونص 9): TODO متنساش self.favourite_attractions = []
-
     def __init__(self, name, phone, email, gender, governorate,
                  password, age, national_id):
-        pass  # TODO
+        self.name = name
+        self.phone = phone
+        self.email = email
+        self.gender = gender
+        self.governorate = governorate
+        self.password = password
+        self.age = age
+        self.national_id = national_id
+        self.favourite_attractions = []
 
-
-#-------------------------------------------------------------
 # 3) Auth
-#-------------------------------------------------------------
 
 users_table = HashTable()
-
-
 def register_user(name, phone, email, gender, governorate,
-                   password, age, national_id):
-    """
-    TODO:
-        1) Make sure the email isnt used
-        2) use the validations functions under
-        3) reg a new user
-    """
-    pass
-
+                  password, age, national_id):
+    if users_table.get(email) is not None:
+        return False
+    if not validate_email(email):
+        return False
+    if not validate_phone(phone):
+        return False
+    user = User(name, phone, email, gender, governorate,
+                password, age, national_id)
+    users_table.insert(email, user)
+    return True
 
 def login(email, password):
-    """
-    TODO:
-        1) لو الإيميل/الباسورد بتوع الأدمن  هات "admin"
-        2) لو مش كده شوف في users_table وشوف من الباسورد
-        3) رجع None لو غلط
-    """
-    pass
 
+    if email == "admin@gmail.com" and password == "admin123":
+        return "admin"
 
-#-------------------------------------------------------------
+    user = users_table.get(email)
+
+    if user is not None and user.password == password:
+        return user
+
+    return None
+
 # 4) Attractions
-#-------------------------------------------------------------
 
 all_attractions = []  # TODO:  ؟  HashTable هنا كمان
-
-
 def add_attraction(name, governorate, ticket_price, rating,
                     estimated_time, category, description="",
                     best_time=""):
-    """[Admin] TODO: اعمل Attraction وضيفه  all_attractions"""
-    pass
+    attraction = Attraction(name, governorate, ticket_price, rating,
+                            estimated_time, category, description,
+                            best_time)
+    all_attractions.append(attraction)
+    return attraction
 
 
 def update_attraction(name, **fields):
-    """[Admin] TODO: سيرش بالاسم وغير الفيلدز """
-    pass
+    attraction = get_attraction_by_name(name)
+
+    if attraction is None:
+        return False
+
+    for field in fields:
+        if hasattr(attraction, field):
+            setattr(attraction, field, fields[field])
+
+    return True
 
 
 def remove_attraction(name):
-    """[Admin] TODO: دور  واحذفه من all_attractions"""
-    pass
+    attraction = get_attraction_by_name(name)
+
+    if attraction is None:
+        return False
+
+    all_attractions.remove(attraction)
+
+    return True
 
 
 def get_by_category(category):
-    """TODO: فلترة all_attractions حسب category"""
-    pass
+    result = []
+    for attraction in all_attractions:
+        if attraction.category.lower() == category.lower():
+            result.append(attraction)
+
+    return result
 
 
 def get_attraction_by_name(name):
-    """TODO: رجع الـ Attraction بالاسم (هتحتاجها في Compare/Favourites)"""
-    pass
+    for attraction in all_attractions:
+        if attraction.name.lower() == name.lower():
+            return attraction
+
+    return None
 
 
 def search_attraction_by_name(category_list, name):
-    """
-    TODO: رتب القائمة بالاسم (لو مش متسورتة) واستخدم
-          binary_search من structures_and_algorithms.py
-    """
-    pass
+    category_list = sort_attractions(category_list, "name")
+
+    index = binary_search(category_list, name, key=lambda x: x.name)
+
+    if index != -1:
+        return category_list[index]
+
+    return None
 
 
 def sort_attractions(category_list, sort_key="ticket_price", ascending=True):
-    """
-    TODO: استخدم quick_sort
-    # TODO : ممكن تتعمل باكتر من شكل عشان البونص
-    """
-    pass
+    return quick_sort(category_list,
+                      key=lambda x: getattr(x, sort_key),
+                      ascending=ascending)
+
+
 
 # TODO  -----------------------جزء اروى-------------------------------------
 #-------------------------------------------------------------
