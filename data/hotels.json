@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Marriott Mena House",
+    "city": "Giza",
+    "price_per_night": 3500,
+    "rating": 4.7,
+    "description": "Historic luxury hotel with direct, unobstructed views of the Great Pyramids of Giza."
+  },
+  {
+    "name": "The Nile Ritz-Carlton",
+    "city": "Cairo",
+    "price_per_night": 4500,
+    "rating": 4.8,
+    "description": "Five-star hotel in downtown Cairo overlooking the Nile River, steps from the Egyptian Museum."
+  },
+  {
+    "name": "Steigenberger Nile Palace",
+    "city": "Luxor",
+    "price_per_night": 2200,
+    "rating": 4.5,
+    "description": "Riverside resort with private boat dock near Luxor Temple and Karnak."
+  },
+  {
+    "name": "Sofitel Legend Old Cataract",
+    "city": "Aswan",
+    "price_per_night": 5500,
+    "rating": 4.9,
+    "description": "Historic palace hotel on pink granite cliffs overlooking Elephantine Island and the Nile."
+  },
+  {
+    "name": "Hilton Hurghada Plaza",
+    "city": "Red Sea",
+    "price_per_night": 2400,
+    "rating": 4.5,
+    "description": "Beachfront resort featuring a private marina and prime access to Red Sea diving."
+  },
+  {
+    "name": "Four Seasons Resort Sharm El Sheikh",
+    "city": "Sinai",
+    "price_per_night": 6200,
+    "rating": 4.8,
+    "description": "World-class hillside luxury resort adjacent to Ras Mohammed reef dive sites."
+  },
+  {
+    "name": "Four Seasons Alexandria at San Stefano",
+    "city": "Alexandria",
+    "price_per_night": 4200,
+    "rating": 4.7,
+    "description": "Mediterranean seafront hotel featuring private beach and panoramic sea views."
+  },
+  {
+    "name": "Ritz Paris",
+    "city": "Paris",
+    "price_per_night": 15000,
+    "rating": 4.9,
+    "description": "Historic palace hotel on Place Vendome, known for French elegance and gastronomy."
+  },
+  {
+    "name": "The St. Regis Rome",
+    "city": "Rome",
+    "price_per_night": 12000,
+    "rating": 4.8,
+    "description": "Grand 1894 landmark hotel offering bespoke butler service near the Spanish Steps."
+  },
+  {
+    "name": "Grace Hotel Santorini",
+    "city": "Santorini",
+    "price_per_night": 9500,
+    "rating": 4.9,
+    "description": "Cliffside boutique hotel in Imerovigli with iconic infinity pool overlooking the caldera."
+  },
+  {
+    "name": "Four Seasons Resort Bali at Sayan",
+    "city": "Bali",
+    "price_per_night": 8500,
+    "rating": 4.9,
+    "description": "Architectural marvel nestled in the Ayung River valley surrounded by rice terraces."
+  },
+  {
+    "name": "Mandarin Oriental Barcelona",
+    "city": "Barcelona",
+    "price_per_night": 7800,
+    "rating": 4.7,
+    "description": "Contemporary luxury hotel on Passeig de Gracia near Gaudi landmarks."
+  },
+  {
+    "name": "The Peninsula Beijing",
+    "city": "Beijing",
+    "price_per_night": 6500,
+    "rating": 4.8,
+    "description": "Premier all-suite hotel blending classic Chinese artistry with modern technology."
+  },
+  {
+    "name": "The Plaza New York",
+    "city": "New York",
+    "price_per_night": 18000,
+    "rating": 4.7,
+    "description": "Timeless Fifth Avenue luxury hotel at Central Park South."
+  },
+  {
+    "name": "El Tovar Hotel",
+    "city": "Arizona",
+    "price_per_night": 4000,
+    "rating": 4.6,
+    "description": "Historic 1905 log and stone lodge situated right on the South Rim of the Grand Canyon."
+  },
+  {
+    "name": "Four Seasons Hotel Istanbul at Sultanahmet",
+    "city": "Istanbul",
+    "price_per_night": 8000,
+    "rating": 4.9,
+    "description": "Century-old neoclassical hotel steps from the Blue Mosque and Hagia Sophia."
+  }
+]

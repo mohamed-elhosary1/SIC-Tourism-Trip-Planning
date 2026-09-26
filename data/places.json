@@ -1,7 +1,6 @@
 [
   {
     "name": "Pyramids of Giza",
-    "city": "Giza",
     "ticket_price": 400,
     "rating": 4.8,
     "estimated_time": "3 hours",
@@ -15,11 +14,11 @@
       2,
       3,
       4
-    ]
+    ],
+    "city": "Giza"
   },
   {
     "name": "Egyptian Museum",
-    "city": "Cairo",
     "ticket_price": 300,
     "rating": 4.6,
     "estimated_time": "2 hours",
@@ -33,11 +32,11 @@
       2,
       3,
       4
-    ]
+    ],
+    "city": "Cairo"
   },
   {
     "name": "Karnak Temple",
-    "city": "Luxor",
     "ticket_price": 350,
     "rating": 4.7,
     "estimated_time": "2 hours",
@@ -51,11 +50,11 @@
       2,
       3,
       4
-    ]
+    ],
+    "city": "Luxor"
   },
   {
     "name": "Abu Simbel",
-    "city": "Aswan",
     "ticket_price": 400,
     "rating": 4.9,
     "estimated_time": "2 hours",
@@ -69,11 +68,11 @@
       2,
       3,
       4
-    ]
+    ],
+    "city": "Aswan"
   },
   {
     "name": "Hurghada Red Sea Beach",
-    "city": "Red Sea",
     "ticket_price": 0,
     "rating": 4.5,
     "estimated_time": "Full day",
@@ -89,11 +88,11 @@
       9,
       10,
       11
-    ]
+    ],
+    "city": "Red Sea"
   },
   {
     "name": "Ras Mohammed National Park",
-    "city": "Sinai",
     "ticket_price": 300,
     "rating": 4.6,
     "estimated_time": "Full day",
@@ -109,11 +108,11 @@
       9,
       10,
       11
-    ]
+    ],
+    "city": "Sinai"
   },
   {
     "name": "Khan El Khalili",
-    "city": "Cairo",
     "ticket_price": 0,
     "rating": 4.4,
     "estimated_time": "2 hours",
@@ -127,11 +126,11 @@
       2,
       3,
       4
-    ]
+    ],
+    "city": "Cairo"
   },
   {
     "name": "Alexandria Corniche",
-    "city": "Alexandria",
     "ticket_price": 0,
     "rating": 4.3,
     "estimated_time": "2 hours",
@@ -143,11 +142,11 @@
       6,
       9,
       10
-    ]
+    ],
+    "city": "Alexandria"
   },
   {
     "name": "Bibliotheca Alexandrina",
-    "city": "Alexandria",
     "ticket_price": 100,
     "rating": 4.5,
     "estimated_time": "2 hours",
@@ -161,11 +160,11 @@
       2,
       3,
       4
-    ]
+    ],
+    "city": "Alexandria"
   },
   {
     "name": "Eiffel Tower",
-    "city": "Paris",
     "ticket_price": 26,
     "rating": 4.7,
     "estimated_time": "2 hours",
@@ -177,11 +176,11 @@
       6,
       9,
       10
-    ]
+    ],
+    "city": "Paris"
   },
   {
     "name": "Colosseum",
-    "city": "Rome",
     "ticket_price": 18,
     "rating": 4.8,
     "estimated_time": "2 hours",
@@ -193,11 +192,11 @@
       6,
       9,
       10
-    ]
+    ],
+    "city": "Rome"
   },
   {
     "name": "Santorini Caldera",
-    "city": "Santorini",
     "ticket_price": 0,
     "rating": 4.9,
     "estimated_time": "Full day",
@@ -209,11 +208,11 @@
       7,
       8,
       9
-    ]
+    ],
+    "city": "Santorini"
   },
   {
     "name": "Ubud Jungle Swing",
-    "city": "Bali",
     "ticket_price": 25,
     "rating": 4.5,
     "estimated_time": "2 hours",
@@ -227,11 +226,11 @@
       8,
       9,
       10
-    ]
+    ],
+    "city": "Bali"
   },
   {
     "name": "Sagrada Familia",
-    "city": "Barcelona",
     "ticket_price": 30,
     "rating": 4.8,
     "estimated_time": "2 hours",
@@ -241,11 +240,11 @@
       5,
       6,
       9
-    ]
+    ],
+    "city": "Barcelona"
   },
   {
     "name": "Great Wall of China",
-    "city": "Beijing",
     "ticket_price": 10,
     "rating": 4.9,
     "estimated_time": "4 hours",
@@ -257,11 +256,11 @@
       6,
       9,
       10
-    ]
+    ],
+    "city": "Beijing"
   },
   {
     "name": "Times Square",
-    "city": "New York",
     "ticket_price": 0,
     "rating": 4.4,
     "estimated_time": "2 hours",
@@ -274,11 +273,11 @@
       9,
       10,
       11
-    ]
+    ],
+    "city": "New York"
   },
   {
     "name": "Grand Canyon Skywalk",
-    "city": "Arizona",
     "ticket_price": 65,
     "rating": 4.7,
     "estimated_time": "Full day",
@@ -291,11 +290,11 @@
       9,
       10,
       11
-    ]
+    ],
+    "city": "Arizona"
   },
   {
     "name": "Blue Mosque",
-    "city": "Istanbul",
     "ticket_price": 0,
     "rating": 4.8,
     "estimated_time": "1 hour",
@@ -306,6 +305,7 @@
       5,
       9,
       10
-    ]
+    ],
+    "city": "Istanbul"
   }
 ]

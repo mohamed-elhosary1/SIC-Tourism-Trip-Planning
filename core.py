@@ -108,6 +108,7 @@ def register_user(name, phone, email, gender, city,
                 password, age, nationality, national_id, passport_id)
     users_table.insert(email, user)
     all_users.append(user)
+    save_data_to_cloud()
     return True
 
 def login(email, password):
@@ -132,6 +133,7 @@ def add_attraction(name, city, ticket_price, rating,
                             estimated_time, category, description,
                             best_season_months)
     all_attractions.append(attraction)
+    save_data_to_cloud()
     return attraction
 
 
@@ -145,6 +147,7 @@ def update_attraction(name, **fields):
         if hasattr(attraction, field):
             setattr(attraction, field, fields[field])
 
+    save_data_to_cloud()
     return True
 
 
@@ -155,7 +158,7 @@ def remove_attraction(name):
         return False
 
     all_attractions.remove(attraction)
-
+    save_data_to_cloud()
     return True
 
 
@@ -211,6 +214,7 @@ def add_hotel(name, city, price_per_night, rating, description=""):
     """[Admin] Add a Hotel and store it in all_hotels."""
     hotel = Hotel(name, city, price_per_night, rating, description)
     all_hotels.append(hotel)
+    save_data_to_cloud()
     return hotel
 
 
@@ -225,6 +229,7 @@ def update_hotel(name, **fields):
         if hasattr(hotel, field):
             setattr(hotel, field, value)
 
+    save_data_to_cloud()
     return True
 
 
@@ -236,6 +241,7 @@ def remove_hotel(name):
         return False
 
     all_hotels.remove(hotel)
+    save_data_to_cloud()
     return True
 
 
@@ -462,7 +468,10 @@ def save_data_to_cloud():
         os.makedirs(os.path.dirname(USERS_FILE) or ".", exist_ok=True)
         for filepath, data in datasets:
             with open(filepath, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False)
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        if os.path.exists("Places.json"):
+            with open("Places.json", "w", encoding="utf-8") as f:
+                json.dump(attractions_data, f, ensure_ascii=False, indent=2)
         local_ok = True
     except Exception as e:
         print(f"[Warning] Local save failed: {e}")
@@ -502,31 +511,47 @@ def load_data_from_cloud():
             print(f"[Warning] Local load failed ({filepath}): {e}")
             return []
 
-    for item in load(ATTRACTIONS_FILE):
-        all_attractions.append(Attraction(
-            item["name"], item.get("city") or item.get("governorate", ""), item["ticket_price"],
-            item["rating"], item["estimated_time"], item["category"],
-            item.get("description", ""),
-            item.get("best_season_months", [])
-        ))
+    # 1. Attractions
+    attractions_list = load(ATTRACTIONS_FILE)
+    if not attractions_list:
+        attractions_list = load(PLACES_FILE)
+    if not attractions_list and os.path.exists("Places.json"):
+        try:
+            with open("Places.json", "r", encoding="utf-8") as f:
+                attractions_list = json.load(f)
+        except Exception:
+            pass
 
+    for item in attractions_list:
+        if not any(a.name.lower() == item["name"].lower() for a in all_attractions):
+            all_attractions.append(Attraction(
+                item["name"], item.get("city") or item.get("governorate", ""), item["ticket_price"],
+                item["rating"], item["estimated_time"], item["category"],
+                item.get("description", ""),
+                item.get("best_season_months", [])
+            ))
+
+    # 2. Hotels
     for item in load(HOTELS_FILE):
-        all_hotels.append(Hotel(
-            item["name"], item.get("city") or item.get("governorate", ""), item["price_per_night"],
-            item["rating"], item.get("description", "")
-        ))
+        if not any(h.name.lower() == item["name"].lower() for h in all_hotels):
+            all_hotels.append(Hotel(
+                item["name"], item.get("city") or item.get("governorate", ""), item["price_per_night"],
+                item["rating"], item.get("description", "")
+            ))
 
+    # 3. Users
     for item in load(USERS_FILE):
-        user = User(item["name"], item["phone"], item["email"], item["gender"],
-                    item.get("city") or item.get("governorate", ""), item["password"], item["age"],
-                    item.get("nationality", "Egyptian"), item.get("national_id"),
-                    item.get("passport_id"))
-        for name in item.get("favourite_attractions", []):
-            attraction = get_attraction_by_name(name)
-            if attraction:
-                user.favourite_attractions.append(attraction)
-        users_table.insert(user.email, user)
-        all_users.append(user)
+        if users_table.get(item["email"]) is None:
+            user = User(item["name"], item["phone"], item["email"], item["gender"],
+                        item.get("city") or item.get("governorate", ""), item["password"], item["age"],
+                        item.get("nationality", "Egyptian"), item.get("national_id"),
+                        item.get("passport_id"))
+            for name in item.get("favourite_attractions", []):
+                attraction = get_attraction_by_name(name)
+                if attraction:
+                    user.favourite_attractions.append(attraction)
+            users_table.insert(user.email, user)
+            all_users.append(user)
 
 
 def load_places_from_json():
@@ -662,6 +687,7 @@ def add_to_favourites(user, attraction_name):
 
     if attraction not in user.favourite_attractions:
         user.favourite_attractions.append(attraction)
+        save_data_to_cloud()
 
     return True
 
@@ -673,6 +699,7 @@ def remove_from_favourites(user, attraction_name):
 
     if attraction in user.favourite_attractions:
         user.favourite_attractions.remove(attraction)
+        save_data_to_cloud()
         return True
     return False
 
@@ -681,74 +708,11 @@ def view_favourites(user):
     return user.favourite_attractions
 
 
-# ---- Sample / seed data for testing and demos ----
+# ---- Data initialization from files ----
 
 def seed_sample_data():
-    """
-    Populate all_attractions and all_hotels with real data for testing/demos.
-    Attractions are loaded from PLACES_FILE first; if that file isn't found,
-    a hardcoded fallback list is used instead. Hotels are always hardcoded.
-    """
+    """Load real data from persistent JSON files into memory. No mock data."""
+    load_data_from_cloud()
     if not all_attractions:
-        if not load_places_from_json():
-            # Fallback attractions (used only if data/places.json is missing)
-            add_attraction("Pyramids of Giza", "Giza", 400, 4.8, "3 hours", "Historical",
-                            "The last surviving wonder of the ancient world, next to the Great Sphinx.",
-                            [10, 11, 12, 1, 2, 3, 4])
-            add_attraction("Egyptian Museum", "Cairo", 300, 4.6, "2 hours", "Historical",
-                            "Home to the world's largest collection of Pharaonic antiquities.",
-                            [10, 11, 12, 1, 2, 3, 4])
-            add_attraction("Karnak Temple", "Luxor", 350, 4.7, "2 hours", "Religious",
-                            "A vast temple complex built over 2,000 years for the god Amun.",
-                            [10, 11, 12, 1, 2, 3, 4])
-            add_attraction("Abu Simbel", "Aswan", 400, 4.9, "2 hours", "Religious",
-                            "Two massive rock temples built by Ramesses II.",
-                            [10, 11, 12, 1, 2, 3, 4])
-            add_attraction("Hurghada Red Sea Beach", "Red Sea", 0, 4.5, "Full day", "Beaches",
-                            "Clear turquoise water and coral reefs on the Red Sea coast.",
-                            [3, 4, 5, 6, 7, 8, 9, 10, 11])
-            add_attraction("Ras Mohammed National Park", "Sinai", 300, 4.6, "Full day", "Adventure",
-                            "Snorkeling and diving at one of the world's top reef sites.",
-                            [3, 4, 5, 6, 7, 8, 9, 10, 11])
-            add_attraction("Khan El Khalili", "Cairo", 0, 4.4, "2 hours", "Entertainment",
-                            "A centuries-old bazaar packed with shops, cafes, and street food.",
-                            [10, 11, 12, 1, 2, 3, 4])
-            add_attraction("Eiffel Tower", "Paris", 26, 4.7, "2 hours", "Entertainment",
-                            "Paris' iconic iron tower with panoramic city views.",
-                            [4, 5, 6, 9, 10])
-            add_attraction("Colosseum", "Rome", 18, 4.8, "2 hours", "Historical",
-                            "The largest ancient amphitheatre ever built.",
-                            [4, 5, 6, 9, 10])
-            add_attraction("Santorini Caldera", "Santorini", 0, 4.9, "Full day", "Beaches",
-                            "Whitewashed villages perched above a volcanic caldera.",
-                            [5, 6, 7, 8, 9])
-            add_attraction("Ubud Jungle Swing", "Bali", 25, 4.5, "2 hours", "Adventure",
-                            "Giant rope swings over rice terraces and jungle canopy.",
-                            [4, 5, 6, 7, 8, 9, 10])
-            add_attraction("Sagrada Familia", "Barcelona", 30, 4.8, "2 hours", "Religious",
-                            "Gaudi's still-unfinished basilica, a masterpiece of design.",
-                            [5, 6, 9])
-            add_attraction("Great Wall of China", "Beijing", 10, 4.9, "4 hours", "Historical",
-                            "An ancient fortification stretching thousands of kilometers.",
-                            [4, 5, 6, 9, 10])
-
-    if not all_hotels:
-        # Hotels — Egypt
-        add_hotel("Marriott Mena House", "Giza", 3500, 4.7,
-                  "Historic hotel with direct views of the Pyramids.")
-        add_hotel("Steigenberger Nile Palace", "Luxor", 2200, 4.5,
-                  "Riverside hotel close to Luxor and Karnak temples.")
-        add_hotel("Four Seasons Aswan", "Aswan", 4000, 4.8,
-                  "Nile-view resort near Elephantine Island.")
-        add_hotel("Hilton Hurghada Plaza", "Red Sea", 1800, 4.4,
-                  "Beachfront resort with private lagoon access.")
-
-        # Hotels — International
-        add_hotel("Ritz Paris", "Paris", 12000, 4.9,
-                  "Legendary luxury hotel steps from Place Vendome.")
-        add_hotel("The St. Regis Rome", "Rome", 9000, 4.8,
-                  "Classic 5-star hotel near the Spanish Steps.")
-        add_hotel("Santorini Grace Hotel", "Santorini", 7000, 4.9,
-                  "Cliffside boutique hotel overlooking the caldera.")
-        add_hotel("Mandarin Oriental Barcelona", "Barcelona", 6000, 4.7,
-                  "Modern luxury hotel on Passeig de Gracia.")
+        load_places_from_json()
+    save_data_to_cloud()
