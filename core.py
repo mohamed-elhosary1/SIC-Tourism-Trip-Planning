@@ -341,19 +341,13 @@ def validate_phone(phone):
         return phonenumbers.is_valid_number(parsed)
     except ImportError:
         import re
-        # Fallback E.164 international format check: '+' followed by 7 to 15 digits
         return bool(re.fullmatch(r"^\+[1-9]\d{6,14}$", str(phone).strip()))
     except Exception:
         return False
 
 
 def validate_national_id(national_id):
-    """
-    Validate an Egyptian national ID (14 digits) beyond just the length:
-      - century digit is 2 (1900s) or 3 (2000s)
-      - the birth date encoded in it (YYMMDD) is a real calendar date
-      - the governorate code is a known one (01-35, or 88 for born abroad)
-    """
+
     import datetime
 
     national_id = str(national_id)

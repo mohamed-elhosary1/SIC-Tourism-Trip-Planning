@@ -2,7 +2,6 @@ import core
 
 
 def nationality_prompt():
-    """Ask for nationality, then the matching ID: national ID for Egyptians, passport for foreigners."""
     nationality = input("Nationality (Egyptian / Foreign): ").strip()
 
     if nationality.lower() == "egyptian":
