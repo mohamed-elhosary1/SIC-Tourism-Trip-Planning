@@ -1,6 +1,18 @@
 import core
 
 
+def nationality_prompt():
+    """Ask for nationality, then the matching ID: national ID for Egyptians, passport for foreigners."""
+    nationality = input("Nationality (Egyptian / Foreign): ").strip()
+
+    if nationality.lower() == "egyptian":
+        national_id = input("National ID (14 digits): ")
+        return nationality, national_id, None
+
+    passport_id = input("Passport ID: ")
+    return nationality, None, passport_id
+
+
 def login_page(navigator):
     print("---- Login ----")
     email = input("Email: ")
@@ -27,29 +39,35 @@ def register_page(navigator):
     phone = input("Phone number (include country code, e.g. +201234567890): ")
     email = input("Email: ")
     gender = input("Gender: ")
-    governorate = input("Governorate: ")
+    city = input("City / Region: ")
     password = input("Password: ")
     age = input("Age: ")
-    national_id = input("National ID: ")
+    nationality, national_id, passport_id = nationality_prompt()
 
     if not core.validate_email(email):
-        print("Invalid email")
+        print("Invalid email. Please use a format like name@example.com")
         return
 
     if not core.validate_phone(phone):
-        print("Invalid phone number")
-        return
-
-    if not core.validate_national_id(national_id):
-        print("Invalid national ID")
+        print("Invalid phone number. Make sure to include the country code, e.g. +201234567890")
         return
 
     if not core.validate_age(age):
-        print("Invalid age")
+        print("Invalid age. Please enter a number between 1 and 120")
         return
 
-    success = core.register_user(name, phone, email, gender, governorate,
-                                  password, int(age), national_id)
+    if nationality.lower() == "egyptian":
+        if not core.validate_national_id(national_id):
+            print("Invalid national ID. It must be 14 digits with a valid birth date and governorate code")
+            return
+    else:
+        if not core.validate_passport_id(passport_id):
+            print("Invalid passport ID. It should be 6-9 letters/numbers")
+            return
+
+    success = core.register_user(name, phone, email, gender, city,
+                                  password, int(age), nationality,
+                                  national_id, passport_id)
 
     if success:
         print("Registered successfully")
@@ -63,6 +81,7 @@ def home_page(navigator, current_user, current_trip):
         print("---- Categories ----")
         for i, category in enumerate(core.CATEGORIES, start=1):
             print(f"{i}) {category}")
+        print("B) Best Season")
         print("T) My Trip")
         print("F) Finish Trip (Summary)")
         print("0) Exit")
@@ -78,18 +97,21 @@ def home_page(navigator, current_user, current_trip):
         elif choice == "F":
             navigator.go_to("final_summary")
             final_summary_page(navigator, current_trip, current_user)
+        elif choice == "B":
+            navigator.go_to("best_season")
+            best_season_page(navigator, current_user, current_trip)
         else:
             try:
                 index = int(choice) - 1
             except ValueError:
-                print("Invalid choice")
+                print("Invalid choice. Enter a category number, B, T, F, or 0.")
                 continue
 
             if 0 <= index < len(core.CATEGORIES):
                 navigator.go_to("category")
                 category_page(navigator, core.CATEGORIES[index], current_user, current_trip)
             else:
-                print("Invalid choice")
+                print("Invalid choice. That category number doesn't exist.")
 
 
 def category_page(navigator, category_name, current_user, current_trip):
@@ -115,18 +137,24 @@ def category_page(navigator, category_name, current_user, current_trip):
             print("No attraction found with this name")
 
     elif choice == "2":
-        sort_key = input("Sort by (ticket_price / rating): ")
-        sorted_list = core.sort_attractions(attractions, sort_key)
-        for attraction in sorted_list:
-            print(f"- {attraction.name} | {getattr(attraction, sort_key)}")
+        sort_key = input("Sort by (ticket_price / rating / name): ").strip()
+
+        if not core.validate_sort_key(sort_key):
+            print(f"Invalid sort option. Choose one of: {', '.join(core.ALLOWED_SORT_KEYS)}")
+        else:
+            sorted_list = core.sort_attractions(attractions, sort_key)
+            for attraction in sorted_list:
+                print(f"- {attraction.name} | {getattr(attraction, sort_key)}")
 
     elif choice == "0":
         navigator.go_back()
+    else:
+        print("Invalid choice")
 
 
 def attraction_detail_page(navigator, attraction, current_trip):
     print(f"Name: {attraction.name}")
-    print(f"Governorate: {attraction.governorate}")
+    print(f"City: {attraction.city}")
     print(f"Price: {attraction.ticket_price}")
     print(f"Rating: {attraction.rating}")
     print(f"Estimated time: {attraction.estimated_time}")
@@ -135,13 +163,15 @@ def attraction_detail_page(navigator, attraction, current_trip):
     choice = input("1) Add to trip  2) Remove from trip  0) Back: ")
 
     if choice == "1":
-        core.add_to_trip(current_trip, attraction)
-        print("Added to trip")
+        added = core.add_to_trip(current_trip, attraction)
+        print("Added to trip" if added else "This attraction is already in your trip")
     elif choice == "2":
-        core.remove_from_trip(current_trip, attraction.name)
-        print("Removed from trip")
+        removed = core.remove_from_trip(current_trip, attraction.name)
+        print("Removed from trip" if removed else "This attraction isn't in your trip")
     elif choice == "0":
         navigator.go_back()
+    else:
+        print("Invalid choice")
 
 
 def my_trip_page(navigator, current_trip):
@@ -155,66 +185,141 @@ def my_trip_page(navigator, current_trip):
 
 
 def final_summary_page(navigator, current_trip, current_user):
-    summary = core.calculate_final_summary(current_trip, current_user.governorate)
+    summary = core.calculate_final_summary(current_trip)
 
     print("---- Final Summary ----")
-    print(f"Attractions cost: {summary['attractions_cost']}")
-    print(f"Transportation cost: {summary['transportation_cost']}")
-    print(f"Total: {summary['total']}")
+    print(f"Attractions cost: {summary['attractions_cost']} EGP")
+    print(f"Fees: {summary['fees']} EGP")
+    print(f"Total: {summary['total']} EGP")
+
+
+
+
+def best_season_page(navigator, current_user, current_trip):
+    print("---- Best Season ----")
+    print("1) See what's good to visit this month")
+    print("2) Enter a travel month to plan ahead")
+    print("0) Back")
+
+    choice = input("Your choice: ").strip()
+
+    if choice == "1":
+        matches, month_name = core.suggest_places_for_current_month()
+    elif choice == "2":
+        month_input = input("Which month are you planning to travel? (name or number): ")
+        month = core.validate_month(month_input)
+        if month is None:
+            print("Invalid month. Enter a month name (e.g. October) or a number 1-12.")
+            return
+        matches = core.suggest_places_by_month(month)
+        month_name = core.MONTH_NAMES[month - 1]
+    elif choice == "0":
+        navigator.go_back()
+        return
+    else:
+        print("Invalid choice")
+        return
+
+    print(f"---- Good to visit in {month_name} ----")
+    if not matches:
+        print("No attractions are marked as best visited in this month yet.")
+        return
+
+    for i, attraction in enumerate(matches, start=1):
+        print(f"{i}) {attraction.name} | {attraction.city} | {attraction.ticket_price} EGP")
+    print("0) Back")
+
+    pick = input("View details (number) or 0 to go back: ").strip()
+
+    if pick == "0":
+        return
+
+    try:
+        index = int(pick) - 1
+    except ValueError:
+        print("Invalid choice")
+        return
+
+    if 0 <= index < len(matches):
+        navigator.go_to("attraction_detail")
+        attraction_detail_page(navigator, matches[index], current_trip)
+    else:
+        print("Invalid choice")
 
 
 def admin_menu(navigator):
-    print("---- Admin Panel ----")
-    print("1) Add attraction")
-    print("2) Update attraction")
-    print("3) Remove attraction")
-    print("0) Exit")
+    while True:
+        print("---- Admin Panel ----")
+        print("1) Add attraction")
+        print("2) Update attraction")
+        print("3) Remove attraction")
+        print("4) Set backup folder")
+        print("0) Exit")
 
-    choice = input("Your choice: ")
+        choice = input("Your choice: ")
 
-    if choice == "1":
-        name = input("Name: ")
-        governorate = input("Governorate: ")
-        ticket_price = float(input("Price: "))
-        rating = float(input("Rating: "))
-        estimated_time = input("Estimated time: ")
-        category = input("Category: ")
+        if choice == "1":
+            name = input("Name: ")
+            city = input("City / Region: ")
 
-        core.add_attraction(name, governorate, ticket_price, rating,
-                             estimated_time, category)
-        print("Added successfully")
-
-    elif choice == "2":
-        name = input("Name of the attraction to update: ")
-        field = input("Field to change: ")
-        value = input("New value: ")
-
-        # ticket_price and rating must stay numeric, not strings.
-        if field in ("ticket_price", "rating"):
             try:
-                value = float(value)
+                ticket_price = float(input("Price: "))
+                rating = float(input("Rating: "))
             except ValueError:
-                print("Invalid numeric value")
-                admin_menu(navigator)
-                return
+                print("Price and rating must be numbers")
+                continue
 
-        core.update_attraction(name, **{field: value})
-        print("Updated successfully")
+            estimated_time = input("Estimated time: ")
+            category = input(f"Category ({', '.join(core.CATEGORIES)}): ")
 
-    elif choice == "3":
-        name = input("Name of the attraction to remove: ")
-        core.remove_attraction(name)
-        print("Removed successfully")
+            core.add_attraction(name, city, ticket_price, rating,
+                                 estimated_time, category)
+            print("Added successfully")
 
-    elif choice == "0":
-        return
+        elif choice == "2":
+            name = input("Name of the attraction to update: ")
+            field = input(f"Field to change ({', '.join(core.ATTRACTION_FIELDS)}): ").strip()
 
-    admin_menu(navigator)
+            if field not in core.ATTRACTION_FIELDS:
+                print(f"Invalid field. Choose one of: {', '.join(core.ATTRACTION_FIELDS)}")
+                continue
+
+            value = input("New value: ")
+
+            # ticket_price and rating must stay numeric, not strings.
+            if field in ("ticket_price", "rating"):
+                try:
+                    value = float(value)
+                except ValueError:
+                    print("Invalid numeric value")
+                    continue
+
+            success = core.update_attraction(name, **{field: value})
+            print("Updated successfully" if success else "Attraction not found")
+
+        elif choice == "3":
+            name = input("Name of the attraction to remove: ")
+            success = core.remove_attraction(name)
+            print("Removed successfully" if success else "Attraction not found")
+
+        elif choice == "4":
+            print(f"Current backup folder: {core.DRIVE_FOLDER or '(not set)'}")
+            path = input("Enter folder path (or Enter to clear): ").strip()
+            if core.set_drive_folder(path):
+                print("Backup folder updated" if path else "Backup folder cleared")
+            else:
+                print("Directory not found")
+
+        elif choice == "0":
+            return
+        else:
+            print("Invalid choice")
 
 
 def run():
     navigator = core.PageNavigator()
     navigator.go_to("login")
+    core.load_config()
     core.seed_sample_data()
 
     while True:
@@ -238,66 +343,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-
-"""
-SIC Tourism & Trip Planning
-
-TODO
-
-phone validation: use phonenumbers lib instead of manual regex ✅
-
-national id validation: make it stronger not just "14 digits" ( Passport for non egyptatin )
-
-add passport_id for foreigners
-
-add nationality attribute (Egyptian -> national_id, foreign -> passport_id)
-
-validate sort_key input (crashes with AttributeError rn if not ticket_price/rating)
-
-better error messages everywhere in general
-
-make places.json with full data for every place
-
-use datetime to suggest places based on current time
-
-add more real places worldwide + hotels + real data for testing ✅
-"""
-
-# ============================================================
-# TODO
-# ============================================================
-
-# --- 2) Nationality / Passport in register flow ---------------------------
-# TODO: register_page() above needs to ask nationality first, then branch:
-#       Egyptian > ask national_id (core.validate_national_id_strict)
-#       foreign  > ask passport_id (core.validate_passport_id)
-#       then call core.register_user_with_nationality(...) instead of
-#       core.register_user(...). Not editing register_page() yet.
-
-def nationality_prompt():
-    """
-    TODO: ask "Egyptian or foreign?" then ask national_id or passport_id
-          accordingly, and return (nationality, id_value).
-    """
-    pass
-
-
-# --- 3) sort_key validation in category_page ------------------------------
-# TODO: category_page() above calls core.sort_attractions(attractions,
-#       sort_key) with a raw input() value -> crashes with AttributeError
-#       on a bad sort_key. Should call core.validate_sort_key(sort_key)
-#       first and re-prompt / show an error instead. Not editing
-#       category_page() yet.
-
-
-# --- 5) Time-based suggestions page ----------------------------------------
-
-def suggested_now_page(navigator, current_user, current_trip):
-    """
-    TODO: new page that calls core.suggest_places_by_current_time() and
-          lets the user browse/add the suggested attractions, same as
-          category_page(). Needs a menu entry added to home_page() once
-          ready — not adding that entry yet since it means editing
-          home_page().
-    """
-    pass

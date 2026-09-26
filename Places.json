@@ -1,0 +1,311 @@
+[
+  {
+    "name": "Pyramids of Giza",
+    "governorate": "Giza",
+    "ticket_price": 400,
+    "rating": 4.8,
+    "estimated_time": "3 hours",
+    "category": "Historical",
+    "description": "The last surviving wonder of the ancient world, next to the Great Sphinx.",
+    "best_season_months": [
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Egyptian Museum",
+    "governorate": "Cairo",
+    "ticket_price": 300,
+    "rating": 4.6,
+    "estimated_time": "2 hours",
+    "category": "Historical",
+    "description": "Home to the world's largest collection of Pharaonic antiquities.",
+    "best_season_months": [
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Karnak Temple",
+    "governorate": "Luxor",
+    "ticket_price": 350,
+    "rating": 4.7,
+    "estimated_time": "2 hours",
+    "category": "Religious",
+    "description": "A vast temple complex built over 2,000 years for the god Amun.",
+    "best_season_months": [
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Abu Simbel",
+    "governorate": "Aswan",
+    "ticket_price": 400,
+    "rating": 4.9,
+    "estimated_time": "2 hours",
+    "category": "Religious",
+    "description": "Two massive rock temples built by Ramesses II.",
+    "best_season_months": [
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Hurghada Red Sea Beach",
+    "governorate": "Red Sea",
+    "ticket_price": 0,
+    "rating": 4.5,
+    "estimated_time": "Full day",
+    "category": "Beaches",
+    "description": "Clear turquoise water and coral reefs on the Red Sea coast.",
+    "best_season_months": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "name": "Ras Mohammed National Park",
+    "governorate": "Sinai",
+    "ticket_price": 300,
+    "rating": 4.6,
+    "estimated_time": "Full day",
+    "category": "Adventure",
+    "description": "Snorkeling and diving at one of the world's top reef sites.",
+    "best_season_months": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "name": "Khan El Khalili",
+    "governorate": "Cairo",
+    "ticket_price": 0,
+    "rating": 4.4,
+    "estimated_time": "2 hours",
+    "category": "Entertainment",
+    "description": "A centuries-old bazaar packed with shops, cafes, and street food.",
+    "best_season_months": [
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Alexandria Corniche",
+    "governorate": "Alexandria",
+    "ticket_price": 0,
+    "rating": 4.3,
+    "estimated_time": "2 hours",
+    "category": "Beaches",
+    "description": "A long Mediterranean waterfront promenade lined with cafes.",
+    "best_season_months": [
+      4,
+      5,
+      6,
+      9,
+      10
+    ]
+  },
+  {
+    "name": "Bibliotheca Alexandrina",
+    "governorate": "Alexandria",
+    "ticket_price": 100,
+    "rating": 4.5,
+    "estimated_time": "2 hours",
+    "category": "Historical",
+    "description": "A modern library and cultural center inspired by the ancient Library of Alexandria.",
+    "best_season_months": [
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Eiffel Tower",
+    "governorate": "Paris",
+    "ticket_price": 26,
+    "rating": 4.7,
+    "estimated_time": "2 hours",
+    "category": "Entertainment",
+    "description": "Paris' iconic iron tower with panoramic city views.",
+    "best_season_months": [
+      4,
+      5,
+      6,
+      9,
+      10
+    ]
+  },
+  {
+    "name": "Colosseum",
+    "governorate": "Rome",
+    "ticket_price": 18,
+    "rating": 4.8,
+    "estimated_time": "2 hours",
+    "category": "Historical",
+    "description": "The largest ancient amphitheatre ever built.",
+    "best_season_months": [
+      4,
+      5,
+      6,
+      9,
+      10
+    ]
+  },
+  {
+    "name": "Santorini Caldera",
+    "governorate": "Santorini",
+    "ticket_price": 0,
+    "rating": 4.9,
+    "estimated_time": "Full day",
+    "category": "Beaches",
+    "description": "Whitewashed villages perched above a volcanic caldera.",
+    "best_season_months": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  {
+    "name": "Ubud Jungle Swing",
+    "governorate": "Bali",
+    "ticket_price": 25,
+    "rating": 4.5,
+    "estimated_time": "2 hours",
+    "category": "Adventure",
+    "description": "Giant rope swings over rice terraces and jungle canopy.",
+    "best_season_months": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ]
+  },
+  {
+    "name": "Sagrada Familia",
+    "governorate": "Barcelona",
+    "ticket_price": 30,
+    "rating": 4.8,
+    "estimated_time": "2 hours",
+    "category": "Religious",
+    "description": "Gaudi's still-unfinished basilica, a masterpiece of design.",
+    "best_season_months": [
+      5,
+      6,
+      9
+    ]
+  },
+  {
+    "name": "Great Wall of China",
+    "governorate": "Beijing",
+    "ticket_price": 10,
+    "rating": 4.9,
+    "estimated_time": "4 hours",
+    "category": "Historical",
+    "description": "An ancient fortification stretching thousands of kilometers.",
+    "best_season_months": [
+      4,
+      5,
+      6,
+      9,
+      10
+    ]
+  },
+  {
+    "name": "Times Square",
+    "governorate": "New York",
+    "ticket_price": 0,
+    "rating": 4.4,
+    "estimated_time": "2 hours",
+    "category": "Entertainment",
+    "description": "Bright billboards, theatres, and constant energy in Manhattan.",
+    "best_season_months": [
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "name": "Grand Canyon Skywalk",
+    "governorate": "Arizona",
+    "ticket_price": 65,
+    "rating": 4.7,
+    "estimated_time": "Full day",
+    "category": "Adventure",
+    "description": "A horseshoe-shaped glass walkway over the Grand Canyon.",
+    "best_season_months": [
+      3,
+      4,
+      5,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "name": "Blue Mosque",
+    "governorate": "Istanbul",
+    "ticket_price": 0,
+    "rating": 4.8,
+    "estimated_time": "1 hour",
+    "category": "Religious",
+    "description": "An Ottoman-era mosque famous for its blue interior tiles.",
+    "best_season_months": [
+      4,
+      5,
+      9,
+      10
+    ]
+  }
+]
