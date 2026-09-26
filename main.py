@@ -86,6 +86,7 @@ def home_page(navigator, current_user, current_trip):
         print("B) Best Season")
         print("T) My Trip")
         print("F) Finish Trip (Summary)")
+        print("V) Favourites")
         print("0) Exit")
 
         choice = input("Choose an option: ").strip().upper()
@@ -99,6 +100,9 @@ def home_page(navigator, current_user, current_trip):
         elif choice == "F":
             navigator.go_to("final_summary")
             final_summary_page(navigator, current_trip, current_user)
+        elif choice == "V":
+            navigator.go_to("favourites")
+            favourites_page(navigator, current_user, current_trip)
         elif choice == "B":
             navigator.go_to("best_season")
             best_season_page(navigator, current_user, current_trip)
@@ -106,7 +110,7 @@ def home_page(navigator, current_user, current_trip):
             try:
                 index = int(choice) - 1
             except ValueError:
-                print("Invalid choice. Enter a category number, B, T, F, or 0.")
+                print("Invalid choice. Enter a category number, B, T, F, V, or 0.")
                 continue
 
             if 0 <= index < len(core.CATEGORIES):
@@ -134,7 +138,7 @@ def category_page(navigator, category_name, current_user, current_trip):
         result = core.search_attraction_by_name(attractions, name)
         if result:
             navigator.go_to("attraction_detail")
-            attraction_detail_page(navigator, result, current_trip)
+            attraction_detail_page(navigator, result, current_trip, current_user)
         else:
             print("No attraction found with this name")
 
@@ -154,7 +158,7 @@ def category_page(navigator, category_name, current_user, current_trip):
         print("Invalid choice")
 
 
-def attraction_detail_page(navigator, attraction, current_trip):
+def attraction_detail_page(navigator, attraction, current_trip, current_user):
     print(f"Name: {attraction.name}")
     print(f"City: {attraction.city}")
     print(f"Price: {attraction.ticket_price}")
@@ -166,7 +170,16 @@ def attraction_detail_page(navigator, attraction, current_trip):
 
     if choice == "1":
         added = core.add_to_trip(current_trip, attraction)
-        print("Added to trip" if added else "This attraction is already in your trip")
+        if added:
+            print("Added to trip")
+            favourite_choice = input("Add this attraction to favourites? (y/n): ").strip().lower()
+            if favourite_choice == "y":
+                if core.add_to_favourites(current_user, attraction.name):
+                    print("Added to favourites")
+                else:
+                    print("Attraction could not be added to favourites")
+        else:
+            print("This attraction is already in your trip")
     elif choice == "2":
         removed = core.remove_from_trip(current_trip, attraction.name)
         print("Removed from trip" if removed else "This attraction isn't in your trip")
@@ -174,6 +187,47 @@ def attraction_detail_page(navigator, attraction, current_trip):
         navigator.go_back()
     else:
         print("Invalid choice")
+
+
+
+def favourites_page(navigator, current_user, current_trip):
+    while True:
+        print("---- Favourites ----")
+
+        favourites = core.view_favourites(current_user)
+
+        if not favourites:
+            print("No favourite attractions yet.")
+        else:
+            for attraction in favourites:
+                print(f"- {attraction.name} | {attraction.ticket_price} EGP")
+
+        print("1) Add favourite")
+        print("2) Remove favourite")
+        print("0) Back")
+
+        choice = input("Your choice: ").strip()
+
+        if choice == "1":
+            name = input("Attraction name: ")
+            if core.add_to_favourites(current_user, name):
+                print("Added to favourites")
+            else:
+                print("Attraction not found")
+
+        elif choice == "2":
+            name = input("Attraction name: ")
+            if core.remove_from_favourites(current_user, name):
+                print("Removed from favourites")
+            else:
+                print("Attraction not found")
+
+        elif choice == "0":
+            navigator.go_back()
+            return
+
+        else:
+            print("Invalid choice")
 
 
 def my_trip_page(navigator, current_trip):
@@ -244,7 +298,7 @@ def best_season_page(navigator, current_user, current_trip):
 
     if 0 <= index < len(matches):
         navigator.go_to("attraction_detail")
-        attraction_detail_page(navigator, matches[index], current_trip)
+        attraction_detail_page(navigator, matches[index], current_trip, current_user)
     else:
         print("Invalid choice")
 
