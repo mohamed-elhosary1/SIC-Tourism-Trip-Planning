@@ -1,5 +1,8 @@
 import core
+import hashlib
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def nationality_prompt():
     nationality = input("Nationality (Egyptian / Foreign): ").strip()

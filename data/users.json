@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "name": "nora ",
+    "phone": "+201120004456",
+    "email": "n@gmail.com",
+    "gender": "female ",
+    "city": "egypt",
+    "password": "1234",
+    "age": 20,
+    "nationality": "Egyptian",
+    "national_id": "30606022100887",
+    "passport_id": null,
+    "favourite_attractions": []
+  },
+  {
+    "name": "hh",
+    "phone": "+201120004456",
+    "email": "g@gmail.com",
+    "gender": "female",
+    "city": "egypt",
+    "password": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "age": 20,
+    "nationality": "Egyptian",
+    "national_id": "30606022100774",
+    "passport_id": null,
+    "favourite_attractions": []
+  }
+]

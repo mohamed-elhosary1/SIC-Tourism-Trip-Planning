@@ -1,7 +1,7 @@
 """
 # TODO  -----------------------جزء الحصري-------------------------------------
 """
-
+import hashlib
 from structures_and_algorithms import Stack, HashTable, binary_search, quick_sort
 
 #-------------------------------------------------------------
@@ -104,6 +104,8 @@ def register_user(name, phone, email, gender, city,
         if not validate_passport_id(passport_id):
             return False
 
+    password = hash_password(password)
+
     user = User(name, phone, email, gender, city,
                 password, age, nationality, national_id, passport_id)
     users_table.insert(email, user)
@@ -118,7 +120,7 @@ def login(email, password):
 
     user = users_table.get(email)
 
-    if user is not None and user.password == password:
+    if user is not None and user.password == hash_password(password):
         return user
 
     return None
@@ -180,13 +182,25 @@ def get_attraction_by_name(name):
 
 
 def search_attraction_by_name(category_list, name):
-    # Sort and compare case-insensitively so "pyramids" matches "Pyramids".
-    sorted_list = quick_sort(category_list.copy(), key=lambda x: x.name.lower())
+    name = name.strip().lower()
 
-    index = binary_search(sorted_list, name.lower(), key=lambda x: x.name.lower())
+    sorted_list = quick_sort(
+        category_list.copy(),
+        key=lambda x: x.name.lower()
+    )
+
+    index = binary_search(
+        sorted_list,
+        name,
+        key=lambda x: x.name.lower()
+    )
 
     if index != -1:
         return sorted_list[index]
+
+    for attraction in category_list:
+        if name in attraction.name.lower():
+            return attraction
 
     return None
 
@@ -332,6 +346,8 @@ def validate_email(email):
     import re
     return bool(re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", str(email)))
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def validate_phone(phone):
     """Validate a phone number globally (must include the country code, e.g. +201234567890)."""
